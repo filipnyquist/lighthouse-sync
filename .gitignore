@@ -1,0 +1,3 @@
+node_modules
+db/schema.sql
+config/connection.js

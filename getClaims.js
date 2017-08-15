@@ -29,6 +29,7 @@ async function getClaimsForTxes(txes,height) {
       let claims_tx = await client.getClaimsForTx(tx).then(claims => {return claims}).catch( err => reject(err));
       if(claims_tx != null){for (let claim of claims_tx) {
         claim['height'] = height;
+        claim['txid'] = tx;
         let d_claim = await getValue(tx,claim['nOut']);
         if(d_claim !== 'error when decoding claims' && claim['value']){
             claim['value'] = JSON.parse(d_claim);
