@@ -13,17 +13,19 @@ const client = new bitcoin.Client({
     pass: 'lbry',
     timeout: 30000
 });
+
 let queue = new RequestQueue({maxSockets: 1, rateLimit: 5}, {
-    item: function(input, done) {
-      request.post(input.url, {json:input.data})
-      .on('response', function(response) {
-          done()
-      })
-    },
-    end: function() {
-    }
+  item: function(input, done) {
+    request.post(input.url, {json:input.data})
+    .on('response', function(error, response) {
+        done()
+    })
+  },
+  end: function() {
+  }
 });
-let claimsSynced=0;
+
+let claimsSynced = 0;
 
 async function sync (currentHeight) {
   try {

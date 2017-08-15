@@ -4,7 +4,6 @@ const chalk = require('chalk');
 const bitcoin = require('bitcoin-promise');
 const request = require('request');
 const sleep = require('sleep');
-const RequestQueue = require("limited-request-queue");
 const Claim = require('./models/claim.js')
 const client = new bitcoin.Client({
     host: 'localhost',
@@ -13,51 +12,38 @@ const client = new bitcoin.Client({
     pass: 'lbry',
     timeout: 30000
 });
-let queue = new RequestQueue({maxSockets: 1, rateLimit: 5}, {
-  item: function(input, done) {
-    request.post(input.url, {json:input.data})
-    .on('response', function(response) {
-        done()
-    })
-  },
-  end: function() {
-  }
-});
-let claimsSynced=0;
+let claimsSynced = 0;
+let claimsAddedToDb = 0;
+let maxHeight;
 
 async function sync (currentHeight) {
   try {
-    let maxHeight = await client.getBlockCount().then(blockHash => {return blockHash}).catch( err => { return err });
     if( currentHeight <= maxHeight ) {
       let claims = await require('./getClaims')(currentHeight, client);
       send(claims);
       claimsSynced += claims.length;
       spinner.color = 'green';
-      spinner.text = `Current block: ${currentHeight}/${maxHeight} | TotalClaimsImported: ${claimsSynced} | SendQueue: ${queue.numQueued()}`
+      spinner.text = `Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced} | TotalClaimsImported: ${claimsAddedToDb}`
       sync(currentHeight+1);
     } else {
+      process.exit(0);
       spinner.color = 'yellow'; 
-      spinner.text = `Waiting for new blocks... | SendQueue: ${queue.numQueued()}`;
-      if(queue.numQueued() < 1){
-      sleep.sleep(5);
-      sync(currentHeight);  
-      }else{
-      sync(currentHeight); 
-      }
+      spinner.text = `Waiting for new blocks...`;
+      maxHeight = await client.getBlockCount().then(blockHash => {return blockHash}).catch( err => { throw err });
+      setTimeout(sync, 60000, currentHeight);
     }
   } catch (err) {
     spinner.color = 'red';
-    spinner.text = ('Error with block: %s, %s', currentHeight, err);
+    spinner.text = `Error with block: ${currentHeight}, ${err}`;
+    setTimeout(sync, 5000, currentHeight - 1);
   }
 }
 
 function isStreamType({ value }){
-  //console.log('VALUE', value);
   return value.claimType === 'streamType';
 }
 
 function isFree({ value }){
-  //console.log('VALUE', value);
   return (!value.stream.metadata.fee || value.stream.metadata.fee.amount === 0);
 }
 
@@ -77,7 +63,6 @@ function send(arr){ // Modular change output here :)
     claim['value'] = (typeof claim.value == "object" ? claim.value : JSON.parse(claim.value));
     // Create a record if the claim is for a free, streamType claim
     if (isStreamType(claim) && isFree(claim)) {
-      //console.log('claim found:', JSON.stringify(claim, undefined, 2))
       // 1. prepare the data
       let claimData = {};
       claimData['nOut'] = claim.nOut;
@@ -114,12 +99,14 @@ function send(arr){ // Modular change output here :)
           }
         }
       }
-      // 2. store in mysql
-      //console.log('claim found:', JSON.stringify(claimData, undefined, 2))
+      // 2. store in mysql db
       Claim.upsertOne(
         claimData,
         `name = "${claimData.name}" AND claimId = "${claimData.claimId}"`
       )
+      .then(() => {
+        claimsAddedToDb += 1;
+      })
       .catch(error => {
         console.log('mysql error:', error);
       })
@@ -127,6 +114,14 @@ function send(arr){ // Modular change output here :)
   });
 }
 
+
 console.log(chalk.green.underline.bold('Running LBRYSync v0.0.1rc1'))
 const spinner = ora('Loading LBRYsync..').start();
-sync(210000)// Block to start from... :)
+client.getBlockCount()  // get the max height and then start the sync
+  .then(blockHash => {
+    maxHeight = blockHash;
+    sync(36526) // Block to start from... :)
+  })
+  .catch( err => { 
+    console.log('startup error:', err)
+  });

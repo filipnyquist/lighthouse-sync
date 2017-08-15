@@ -39,7 +39,7 @@ async function getClaimsForTxes(txes,height) {
           claimsArr.push(claim);
         }
       }}
-    }  
+    }
     resolve(claimsArr);
     } catch (err) {
       return reject(err)
@@ -49,7 +49,7 @@ async function getClaimsForTxes(txes,height) {
 
 async function getValue(tx, i){
   return new Promise(async (resolve, reject) => {
-rp(`http://localhost:5000/claim_decode/${tx}/${i}`)
+    rp(`http://localhost:5000/claim_decode/${tx}/${i}`)
     .then(function (htmlString) {
         resolve(htmlString);
     })

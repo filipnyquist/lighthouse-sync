@@ -38,7 +38,7 @@ var orm = {
       });
     })
   },
-  // method to find all from a table
+  // method to find all matching entries in a table
   findAll: function (tableName, columns, condition) {
     var sqlQuery = 'SELECT ' + columns + ' ';
     sqlQuery += 'FROM ' + tableName + ' ';
@@ -52,7 +52,7 @@ var orm = {
       });
     });
   },
-  // method to update one entry
+  // method to update one entry in a table
   updateOne: function (tableName, columns, values, condition) {
     let sqlQuery = 'UPDATE ' + tableName + ' ';
     sqlQuery += 'SET ' + columns.join(' = ? , ') + ' = ? ';
