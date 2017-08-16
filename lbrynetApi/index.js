@@ -2,7 +2,7 @@ const axios = require('axios');
 
 module.exports = {
   resolveUri (uri) {
-    console.log(`\nlbryApi >> Resolving URI...`);
+    //console.log(`\nlbryApi >> Resolving URI...`);
     // console.log('resolving uri', uri);
     return new Promise((resolve, reject) => {
       axios
@@ -21,7 +21,7 @@ module.exports = {
           }
         })
         .catch(error => {
-          console.log('error with resolve', error);
+          console.log('\nerror with resolve', error);
           reject(error);
         });
     });

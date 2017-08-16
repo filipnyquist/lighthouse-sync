@@ -136,5 +136,5 @@ client.getBlockCount()  // get the max height and then start the sync
     sync(224300) // Block to start from... :)
   })
   .catch( err => { 
-    console.log('startup error:', err)
+    console.log('\nstartup error:', err)
   });

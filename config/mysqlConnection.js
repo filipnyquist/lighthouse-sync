@@ -16,10 +16,10 @@ if (process.env.MYSQLDB_URL) {
 
 connection.connect(function (error) {
   if (error) {
-    console.log('An error occured connecting to MySQL:', error);
+    console.log('\nAn error occured connecting to MySQL:', error);
     return;
   }
-  console.log('Connected to MySQL as connection:', connection.threadId);
+  console.log('\nConnected to MySQL as connection:', connection.threadId);
 });
 
 module.exports = connection;
