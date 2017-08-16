@@ -3,7 +3,6 @@ const ora = require('ora');
 const chalk = require('chalk');
 const bitcoin = require('bitcoin-promise');
 const request = require('request');
-const sleep = require('sleep');
 const RequestQueue = require("limited-request-queue");
 
 const client = new bitcoin.Client({
@@ -41,10 +40,9 @@ async function sync (currentHeight) {
       spinner.color = 'yellow'; 
       spinner.text = `Waiting for new blocks... | SendQueue: ${queue.numQueued()}`;
       if(queue.numQueued() < 1){
-      sleep.sleep(5);
-      sync(currentHeight);  
+      setTimeout(sync, 5000, currentHeight);
       }else{
-      sync(currentHeight); 
+      setTimeout(sync, 5000, currentHeight);
       }
     }
   } catch (err) {

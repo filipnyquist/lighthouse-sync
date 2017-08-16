@@ -12,7 +12,6 @@
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
     "request-rate-limiter": "^1.0.2",
-    "sleep": "^5.1.1",
     "throttled-queue": "^1.0.4",
     "unirest": "^0.5.1"
   },

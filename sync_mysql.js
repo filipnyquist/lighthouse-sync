@@ -3,7 +3,6 @@ const ora = require('ora');
 const chalk = require('chalk');
 const bitcoin = require('bitcoin-promise');
 const request = require('request');
-const sleep = require('sleep');
 const Claim = require('./models/claim.js')
 const client = new bitcoin.Client({
     host: 'localhost',

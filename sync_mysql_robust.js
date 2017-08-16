@@ -2,7 +2,6 @@ const Promise = require('bluebird')
 const ora = require('ora');
 const chalk = require('chalk');
 const bitcoin = require('bitcoin-promise');
-const sleep = require('sleep');
 const Claim = require('./models/claim.js')
 const lbrynetApi = require('./lbrynetApi');
 const client = new bitcoin.Client({
