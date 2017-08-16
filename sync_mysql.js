@@ -13,7 +13,6 @@ const client = new bitcoin.Client({
     timeout: 30000
 });
 let claimsSynced = 0;
-let claimsAddedToDb = 0;
 let maxHeight;
 
 async function sync (currentHeight) {
@@ -23,19 +22,19 @@ async function sync (currentHeight) {
       send(claims);
       claimsSynced += claims.length;
       spinner.color = 'green';
-      spinner.text = `Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced} | TotalClaimsImported: ${claimsAddedToDb}`
+      spinner.text = `Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced}`
       sync(currentHeight+1);
     } else {
-      process.exit(0);
+      //process.exit(0);
       spinner.color = 'yellow'; 
-      spinner.text = `Waiting for new blocks...`;
+      spinner.text = `Waiting for new blocks (last block: ${maxHeight})...`;
       maxHeight = await client.getBlockCount().then(blockHash => {return blockHash}).catch( err => { throw err });
-      setTimeout(sync, 60000, currentHeight);
+      setTimeout(sync, 120000, currentHeight);
     }
   } catch (err) {
     spinner.color = 'red';
     spinner.text = `Error with block: ${currentHeight}, ${err}`;
-    setTimeout(sync, 5000, currentHeight - 1);
+    setTimeout(sync, 10000, currentHeight - 1);
   }
 }
 
@@ -104,9 +103,6 @@ function send(arr){ // Modular change output here :)
         claimData,
         `name = "${claimData.name}" AND claimId = "${claimData.claimId}"`
       )
-      .then(() => {
-        claimsAddedToDb += 1;
-      })
       .catch(error => {
         console.log('mysql error:', error);
       })
@@ -114,13 +110,12 @@ function send(arr){ // Modular change output here :)
   });
 }
 
-
 console.log(chalk.green.underline.bold('Running LBRYSync v0.0.1rc1'))
 const spinner = ora('Loading LBRYsync..').start();
 client.getBlockCount()  // get the max height and then start the sync
   .then(blockHash => {
     maxHeight = blockHash;
-    sync(36526) // Block to start from... :)
+    sync(224300) // Block to start from... :)
   })
   .catch( err => { 
     console.log('startup error:', err)

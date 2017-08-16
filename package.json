@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "axios": "^0.16.2",
     "bitcoin-promise": "filipnyquist/node-bitcoin-promise#c3eb4bea552a7a136a4a1405d831da3e92f2efea",
     "bluebird": "^3.5.0",
     "chalk": "^2.0.1",
