@@ -14,7 +14,7 @@ const client = new bitcoin.Client({
 let claimsSynced = 0;
 let maxHeight;
 const startHeight = (parseInt(process.argv[2]) || 0);
-const blockConsumptionSpeed = (parseInt(process.argv[3]) || 1);
+const throttle = (parseInt(process.argv[3]) || 100);
 
 async function sync (currentHeight) {
   try {
@@ -24,7 +24,12 @@ async function sync (currentHeight) {
       claimsSynced += claims.length;
       spinner.color = 'green';
       spinner.text = `Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced}`
-      setTimeout(sync, blockConsumptionSpeed, currentHeight+1);
+      if (claims.length >= 1){
+        setTimeout(sync, throttle * claims.length, currentHeight+1);
+      } else {
+        sync(currentHeight+1)
+      }
+      
     } else {
       //process.exit(0);
       spinner.color = 'yellow'; 
@@ -107,24 +112,30 @@ function createClaimDataFromResolve(claim){
   return claimData;
 };
 
+function resolveAndStoreClaim(claim){
+  console.log("\nresolving and storing claim.claimId");
+  // 1. prepare the data
+  lbrynetApi.resolveUri(`${claim.name}#${claim.claimId}`)
+  .then(result => {
+    //console.log('\nresolve result:', result)
+    return claimData = createClaimDataFromResolve(result);
+  })
+  // 2. store in mysql db
+  .then(claimData => {
+    //console.log('\nclaimdata:', claimData)
+    const updateCriteria = `name = "${claim.name}" AND claimId = "${claim.claimId}"`;
+    return Claim.upsertOne(claimData, updateCriteria)
+  })
+  .catch(error => {
+      console.log('\n SEND ERROR', error);
+    });
+}
+
 function send(arr){ // Modular change output here :)
-  arr.forEach(function(claim) { 
+  arr.forEach(function(claim, index) { 
     if (isStreamType(claim) && isFree(claim)) {
-      // 1. prepare the data
-      lbrynetApi.resolveUri(`${claim.name}#${claim.claimId}`)
-      .then(result => {
-        //console.log('\nresolve result:', result)
-        return claimData = createClaimDataFromResolve(result);
-      })
-      // 2. store in mysql db
-      .then(claimData => {
-        //console.log('\nclaimdata:', claimData)
-        const updateCriteria = `name = "${claim.name}" AND claimId = "${claim.claimId}"`;
-        return Claim.upsertOne(claimData, updateCriteria)
-      })
-      .catch(error => {
-          console.log('\n SEND ERROR', error);
-        });
+      let bufferTime = currentHeight * 
+      setTimeout(resolveAndStoreClaim, throttle * index, claim)
     }
   });
 }
