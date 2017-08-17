@@ -40,6 +40,7 @@ const claimModel = {
         const dateTimeNow = dateNow.toISOString().slice(0, 19).replace('T', ' ');
         columns.push('updatedAt');
         values.push(dateTimeNow);
+        console.log(`\nupdating Claim ${valuesObject.claimId}`);
         return orm.updateOne('Claim', columns, values, `id = ${result[0].id}`);
       } else {
         const columns = [];
@@ -56,6 +57,7 @@ const claimModel = {
         const dateTimeNow = dateNow.toISOString().slice(0, 19).replace('T', ' ');
         values.push(dateTimeNow)
         values.push(dateTimeNow);
+        console.log(`\ninserting Claim ${valuesObject.claimId}`);
         return orm.insertOne('Claim', columns, values);
       }
     })
