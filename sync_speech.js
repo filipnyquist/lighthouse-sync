@@ -25,7 +25,7 @@ async function sync (currentHeight) {
       spinner.color = 'green';
       spinner.text = `Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced}`
       if (claims.length >= 1){
-        const waitTime = throttle * claims.length * 2;
+        const waitTime = throttle * claims.length;
         console.log(`block wait time: ${waitTime}`);
         setTimeout(sync, waitTime, currentHeight+1);
       } else {
@@ -115,7 +115,7 @@ function createClaimDataFromResolve(claim){
 };
 
 function resolveAndStoreClaim(claim){
-  console.log(`\nresolving and storing ${claim.claimId}`);
+  console.log(`\nresolving and storing ${claim.claimId} ${claim.claimId}`);
   // 1. prepare the data
   lbrynetApi.resolveUri(`${claim.name}#${claim.claimId}`)
   .then(result => {
@@ -136,7 +136,7 @@ function resolveAndStoreClaim(claim){
 function send(arr){ // Modular change output here :)
   arr.forEach(function(claim, index) { 
     if (isStreamType(claim) && isFree(claim)) {
-      const sendBuffer = throttle * 0.5 * index;
+      const sendBuffer = throttle * (1 / arr.length) * index + 1;
       console.log(`send buffer: ${sendBuffer}`);
       setTimeout(resolveAndStoreClaim, sendBuffer, claim);
     }
