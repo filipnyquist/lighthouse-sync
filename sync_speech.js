@@ -134,8 +134,7 @@ function resolveAndStoreClaim(claim){
 function send(arr){ // Modular change output here :)
   arr.forEach(function(claim, index) { 
     if (isStreamType(claim) && isFree(claim)) {
-      let bufferTime = currentHeight * 
-      setTimeout(resolveAndStoreClaim, throttle * index, claim)
+      setTimeout(resolveAndStoreClaim, throttle * index, claim);
     }
   });
 }
