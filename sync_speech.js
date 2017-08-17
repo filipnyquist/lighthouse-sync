@@ -113,7 +113,7 @@ function createClaimDataFromResolve(claim){
 };
 
 function resolveAndStoreClaim(claim){
-  console.log("\nresolving and storing claim.claimId");
+  console.log(`\nresolving and storing ${claim.claimId}`);
   // 1. prepare the data
   lbrynetApi.resolveUri(`${claim.name}#${claim.claimId}`)
   .then(result => {
