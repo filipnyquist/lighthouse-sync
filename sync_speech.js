@@ -136,7 +136,7 @@ function resolveAndStoreClaim(claim){
 function send(arr){ // Modular change output here :)
   arr.forEach(function(claim, index) { 
     if (isStreamType(claim) && isFree(claim)) {
-      const sendBuffer = throttle * (1 / arr.length) * (index + 1);
+      const sendBuffer = throttle * index;
       console.log(`send buffer: ${sendBuffer}`);
       setTimeout(resolveAndStoreClaim, sendBuffer, claim);
     }
