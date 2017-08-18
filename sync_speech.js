@@ -26,7 +26,7 @@ async function sync (currentHeight) {
       spinner.text = `Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced}`
       if (claims.length >= 1){
         const waitTime = throttle * claims.length;
-        console.log(`block wait time: ${waitTime}`);
+        console.log(`\nblock wait time: ${waitTime}`);
         setTimeout(sync, waitTime, currentHeight+1);
       } else {
         sync(currentHeight+1)
@@ -137,7 +137,7 @@ function send(arr){ // Modular change output here :)
   arr.forEach(function(claim, index) { 
     if (isStreamType(claim) && isFree(claim)) {
       const sendBuffer = throttle * index;
-      console.log(`send buffer: ${sendBuffer}`);
+      console.log(`\nsend buffer: ${sendBuffer}`);
       setTimeout(resolveAndStoreClaim, sendBuffer, claim);
     }
   });

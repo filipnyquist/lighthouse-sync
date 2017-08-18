@@ -3,6 +3,7 @@ This repo is a fork of [lighthouse-sync](https://github.com/filipnyquist/lightho
 
 ## how to run this repository locally
 * clone this repo
+* run `npm install`
 * start mysql
 	* create a database called `lbry`
 	* add your connection details to the `user` and `password` fields in `config/mysqlConnection.js`
