@@ -7,8 +7,8 @@ const lbrynetApi = require('./lbrynetApi');
 const client = new bitcoin.Client({
     host: 'localhost',
     port: 9245,
-    user: '******',
-    pass: '******',
+    user: 'lbry',
+    pass: 'lbry',
     timeout: 30000
 });
 let claimsSynced = 0;
