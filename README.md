@@ -1,5 +1,5 @@
 # lighthouse-sync for spee.ch
-This repo is a fork of [lighthouse-sync](https://github.com/filipnyquist/lighthouse-sync) created by @filipnyquist. It has been modified to sync claims into a mysql table for use with spee.ch.
+This repo is a fork of [lighthouse-sync](https://github.com/filipnyquist/lighthouse-sync) created by @filipnyquist. It has been modified slightly to sync claims into a mysql table for use with spee.ch.
 
 ## how to run this repository locally
 * clone this repo
