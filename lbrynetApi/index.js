@@ -16,8 +16,10 @@ module.exports = {
             reject(data.result[uri].error);
           } else if (data.result[uri].claim) {  // if no errors, resolve
             resolve(data.result[uri].claim);
+          } else if (data.result[uri].certificate) {  // if no errors, resolve
+            resolve(data.result[uri].certificate);
           } else {
-            return new Error('resolve returned something that was not a claim')
+            throw new Error('resolve returned something that was not a claim')
           }
         })
         .catch(error => {

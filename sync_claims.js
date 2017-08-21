@@ -4,13 +4,8 @@ const chalk = require('chalk');
 const bitcoin = require('bitcoin-promise');
 const Claim = require('./models/claim.js')
 const lbrynetApi = require('./lbrynetApi');
-const client = new bitcoin.Client({
-    host: 'localhost',
-    port: 9245,
-    user: 'lbry',
-    pass: 'lbry',
-    timeout: 30000
-});
+const bitcoinConfig = require('./config/bitcoinConfig.js');
+const client = new bitcoin.Client(bitcoinConfig);
 let claimsSynced = 0;
 let maxHeight;
 const startHeight = (parseInt(process.argv[2]) || 0);
@@ -67,7 +62,6 @@ function cleanString(input) {
 function createClaimDataFromResolve(claim){
   let claimData = {};
   claimData['name'] = claim.name;
-  claimData['claimId'] = claim.claimId;
   claimData['address'] = claim.address;
   claimData['amount'] = claim.amount;
   claimData['claimId'] = claim.claim_id;
@@ -129,7 +123,7 @@ function resolveAndStoreClaim(claim){
     return Claim.upsertOne(claimData, updateCriteria)
   })
   .catch(error => {
-      console.log('\n SEND ERROR', error);
+      console.log('\nSEND ERROR', error);
     });
 }
 
