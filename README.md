@@ -17,5 +17,5 @@ This repo is a fork of [lighthouse-sync](https://github.com/filipnyquist/lightho
 		* i.e. edit the `config.json` to change the port to `9245`
 	* start the decoder with `python decoder.py` and leave running
 * start the sync tool, passing two optional variables
-	* run `node sync_speech` and optionally pass (1) the starting block number and (2) a durration to pause the tool between claims in millisecondsl
-	* e.g. `node sync_speech 0 1000`
+	* run `node sync_all` and optionally pass (1) the starting block number and (2) a durration to pause the tool between claims in milliseconds
+	* e.g. `node sync_speech 0 1000` to start at block 0 with a 1 second buffer
