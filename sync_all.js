@@ -11,7 +11,7 @@ const client = new bitcoin.Client(bitcoinConfig);
 let claimsSynced = 0;
 let maxHeight;
 const startHeight = (parseInt(process.argv[2]) || 0);
-const throttle = (parseInt(process.argv[3]) || 100);
+const throttle = (parseInt(process.argv[3]) || 500);
 
 require('./config/loggerConfig.js')(logger, 'debug') //configure winston
 
