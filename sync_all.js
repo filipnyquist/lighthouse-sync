@@ -21,10 +21,10 @@ async function sync (currentHeight) {
       let claims = await require('./getClaims')(currentHeight, client);
       send(claims);
       claimsSynced += claims.length;
-      logger.verbose(`Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced}`);
+      logger.info(`Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced}`);
       if (claims.length >= 1){
         const waitTime = throttle * claims.length;
-        logger.debug(`\nblock wait time: ${waitTime}`);
+        logger.verbose(`block wait time: ${waitTime}`);
         setTimeout(sync, waitTime, currentHeight+1);
       } else {
         sync(currentHeight+1)
@@ -119,16 +119,16 @@ function createClaimDataFromResolve(claim){
 };
 
 function resolveAndStoreClaim(claim){
-  logger.debug(`resolving and storing ${claim.name} ${claim.claimId}`);
+  logger.verbose(`resolving ${claim.name}#${claim.claimId}`);
   // 1. prepare the data
   lbrynetApi.resolveUri(`${claim.name}#${claim.claimId}`)
   .then(result => {
-    //logger.debug('resolve result:', result)
+    //logger.verbose('resolve result:', result)
     return claimData = createClaimDataFromResolve(result);
   })
   // 2. store in mysql db
   .then(claimData => {
-    //logger.debug('claimdata:', claimData)
+    //logger.verbose('claimdata:', claimData)
     const updateCriteria = `name = "${claim.name}" AND claimId = "${claim.claimId}"`;
     if (isStreamType(claim)){
       return Claim.upsertOne(claimData, updateCriteria);
@@ -138,7 +138,7 @@ function resolveAndStoreClaim(claim){
     
   })
   .catch(error => {
-      logger.debug('SEND ERROR', error);
+      logger.error('SEND ERROR', error);
     });
 }
 
@@ -146,7 +146,7 @@ function send(arr){ // Modular change output here :)
   arr.forEach(function(claim, index) { 
     if (isStreamType(claim) && isFree(claim) || isCertificateType(claim)) {
       const sendBuffer = throttle * index;
-      logger.debug(`send buffer: ${sendBuffer}`);
+      logger.verbose(`send buffer: ${sendBuffer}`);
       setTimeout(resolveAndStoreClaim, sendBuffer, claim);
     }
   });

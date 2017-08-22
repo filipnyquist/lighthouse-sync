@@ -13,7 +13,8 @@
     "request-promise": "^4.2.1",
     "request-rate-limiter": "^1.0.2",
     "throttled-queue": "^1.0.4",
-    "unirest": "^0.5.1"
+    "unirest": "^0.5.1",
+    "winston": "^2.3.1"
   },
   "name": "LBRYsync",
   "version": "1.0.0",
