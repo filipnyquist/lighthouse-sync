@@ -6,11 +6,14 @@ const Claim = require('./models/claim.js')
 const Certificate = require('./models/certificate.js')
 const lbrynetApi = require('./lbrynetApi');
 const bitcoinConfig = require('./config/bitcoinConfig.js');
+const logger = require('winston');
 const client = new bitcoin.Client(bitcoinConfig);
 let claimsSynced = 0;
 let maxHeight;
 const startHeight = (parseInt(process.argv[2]) || 0);
 const throttle = (parseInt(process.argv[3]) || 100);
+
+require('./config/loggerConfig.js')(logger, 'debug') //configure winston
 
 async function sync (currentHeight) {
   try {
@@ -18,11 +21,10 @@ async function sync (currentHeight) {
       let claims = await require('./getClaims')(currentHeight, client);
       send(claims);
       claimsSynced += claims.length;
-      spinner.color = 'green';
-      spinner.text = `Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced}`
+      logger.verbose(`Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced}`);
       if (claims.length >= 1){
         const waitTime = throttle * claims.length;
-        console.log(`\nblock wait time: ${waitTime}`);
+        logger.debug(`\nblock wait time: ${waitTime}`);
         setTimeout(sync, waitTime, currentHeight+1);
       } else {
         sync(currentHeight+1)
@@ -30,14 +32,12 @@ async function sync (currentHeight) {
       
     } else {
       //process.exit(0);
-      spinner.color = 'yellow'; 
-      spinner.text = `Waiting for new blocks (last block: ${maxHeight})...`;
+      logger.info(`Waiting for new blocks (last block: ${maxHeight})...`);
       maxHeight = await client.getBlockCount().then(blockHash => {return blockHash}).catch( err => { throw err });
       setTimeout(sync, 120000, currentHeight);
     }
   } catch (err) {
-    spinner.color = 'red';
-    spinner.text = `Error with block: ${currentHeight}, ${err}`;
+    logger.error(`Error with block: ${currentHeight}, ${err}`);
     setTimeout(sync, 10000, currentHeight - 1);
   }
 }
@@ -119,16 +119,16 @@ function createClaimDataFromResolve(claim){
 };
 
 function resolveAndStoreClaim(claim){
-  console.log(`\nresolving and storing ${claim.name} ${claim.claimId}`);
+  logger.debug(`resolving and storing ${claim.name} ${claim.claimId}`);
   // 1. prepare the data
   lbrynetApi.resolveUri(`${claim.name}#${claim.claimId}`)
   .then(result => {
-    //console.log('\nresolve result:', result)
+    //logger.debug('resolve result:', result)
     return claimData = createClaimDataFromResolve(result);
   })
   // 2. store in mysql db
   .then(claimData => {
-    //console.log('\nclaimdata:', claimData)
+    //logger.debug('claimdata:', claimData)
     const updateCriteria = `name = "${claim.name}" AND claimId = "${claim.claimId}"`;
     if (isStreamType(claim)){
       return Claim.upsertOne(claimData, updateCriteria);
@@ -138,7 +138,7 @@ function resolveAndStoreClaim(claim){
     
   })
   .catch(error => {
-      console.log('\nSEND ERROR', error);
+      logger.debug('SEND ERROR', error);
     });
 }
 
@@ -146,19 +146,19 @@ function send(arr){ // Modular change output here :)
   arr.forEach(function(claim, index) { 
     if (isStreamType(claim) && isFree(claim) || isCertificateType(claim)) {
       const sendBuffer = throttle * index;
-      console.log(`\nsend buffer: ${sendBuffer}`);
+      logger.debug(`send buffer: ${sendBuffer}`);
       setTimeout(resolveAndStoreClaim, sendBuffer, claim);
     }
   });
 }
 
-console.log(chalk.green.underline.bold('Running LBRYSync v0.0.1rc1'))
-const spinner = ora('Loading LBRYsync..').start();
+logger.verbose(chalk.green.underline.bold('Running LBRYSync v0.0.1rc1'));
+logger.verbose('Loading LBRYsync..');
 client.getBlockCount()  // get the max height and then start the sync
   .then(blockHash => {
     maxHeight = blockHash;
     sync(startHeight) // Block to start from... :)
   })
   .catch( err => { 
-    console.log('\nstartup error:', err)
+    logger.error('startup error:', err)
   });
