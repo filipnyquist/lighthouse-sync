@@ -1,17 +1,12 @@
 const mysql = require('mysql');
-let connection;
 
-if (process.env.MYSQL_CONNECTION_STRING) {
-  connection = mysql.createConnection(process.env.MYSQL_CONNECTION_STRING);
-} else {
-  connection = mysql.createConnection({
-    host    : 'localhost',
-    port    : 3306,
-    user    : 'root',
-    password: '*****',
-    database: 'lbry',
-  });
-};
+const connection = mysql.createConnection({
+  host    : 'localhost',
+  port    : 3306,
+  user    : process.env.MYSQL_USERNAME || 'root',
+  password: process.env.MYSQL_PASSWORD || '*****',
+  database: 'lbry',
+});
 
 connection.connect(function (error) {
   if (error) {

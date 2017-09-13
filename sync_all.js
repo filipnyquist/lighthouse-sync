@@ -11,7 +11,7 @@ const client = new bitcoin.Client(bitcoinConfig);
 let claimsSynced = 0;
 let maxHeight;
 const startHeight = (parseInt(process.argv[2]) || 0);
-const throttle = (parseInt(process.argv[3]) || 500);
+const throttle = (parseInt(process.argv[3]) || 1000);
 
 require('./config/loggerConfig.js')(logger, 'debug') //configure winston
 
@@ -156,6 +156,7 @@ logger.verbose(chalk.green.underline.bold('Running LBRYSync v0.0.1rc1'));
 logger.verbose('Loading LBRYsync..');
 client.getBlockCount()  // get the max height and then start the sync
   .then(blockHash => {
+    console.log('block hash', blockHash);
     maxHeight = blockHash;
     sync(startHeight) // Block to start from... :)
   })
