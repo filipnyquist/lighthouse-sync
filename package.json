@@ -14,7 +14,8 @@
     "request-rate-limiter": "^1.0.2",
     "throttled-queue": "^1.0.4",
     "unirest": "^0.5.1",
-    "winston": "^2.3.1"
+    "winston": "^2.3.1",
+    "winston-slack-webhook": "billbitt/winston-slack-webhook"
   },
   "name": "LBRYsync",
   "version": "1.0.0",

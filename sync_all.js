@@ -10,10 +10,11 @@ const logger = require('winston');
 const client = new bitcoin.Client(bitcoinConfig);
 let claimsSynced = 0;
 let maxHeight;
-const startHeight = (parseInt(process.argv[2]) || 0);
+const startHeight = (parseInt(process.argv[2]) || 177958);
 const throttle = (parseInt(process.argv[3]) || 1000);
 
 require('./config/loggerConfig.js')(logger, 'debug') //configure winston
+require('./config/slackLoggerConfig.js')(logger);
 
 async function sync (currentHeight) {
   try {
@@ -32,7 +33,7 @@ async function sync (currentHeight) {
       
     } else {
       //process.exit(0);
-      logger.info(`Waiting for new blocks (last block: ${maxHeight})...`);
+      logger.verbose(`Waiting for new blocks (last block: ${maxHeight})...`);
       maxHeight = await client.getBlockCount().then(blockHash => {return blockHash}).catch( err => { throw err });
       setTimeout(sync, 120000, currentHeight);
     }
