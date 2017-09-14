@@ -1,6 +1,14 @@
 const SLACK_WEB_HOOK = process.env.SLACK_WEB_HOOK || 'none';
-const SLACK_ERROR_CHANNEL = '#speech-errors';
-const SLACK_INFO_CHANNEL = '#speech-logs';
+let SLACK_ERROR_CHANNEL;
+let SLACK_INFO_CHANNEL;
+if (process.env.NODE_ENV === 'production') {
+    SLACK_ERROR_CHANNEL = '#speech-errors';
+    SLACK_INFO_CHANNEL = '#speech-logs';
+} else {
+    SLACK_ERROR_CHANNEL = '#staging_speech-errors';
+    SLACK_INFO_CHANNEL = '#staging_speech-logs';
+}
+
 const winstonSlackWebHook = require('winston-slack-webhook').SlackWebHook;
 
 module.exports = (winston) => {
