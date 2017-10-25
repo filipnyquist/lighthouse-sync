@@ -10,7 +10,7 @@ const logger = require('winston');
 const client = new bitcoin.Client(bitcoinConfig);
 let claimsSynced = 0;
 let maxHeight;
-const startHeight = (parseInt(process.argv[2]) || 178130);
+const startHeight = (parseInt(process.argv[2]) || 253685);
 const throttle = (parseInt(process.argv[3]) || 1000);
 
 require('./config/loggerConfig.js')(logger, 'debug') //configure winston
@@ -67,9 +67,9 @@ function cleanString(input) {
 
 function createClaimDataFromResolve(claim){
   let claimData = {};
-  claimData['name'] = claim.name;
   claimData['address'] = claim.address;
   claimData['amount'] = claim.amount;
+  claimData['channelName'] = claim.channel_name;
   claimData['claimId'] = claim.claim_id;
   claimData['claimSequence'] = claim.claim_sequence;
   claimData['decodedClaim'] = claim.decoded_claim;
