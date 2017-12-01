@@ -18,11 +18,11 @@
     "winston": "^2.3.1",
     "winston-slack-webhook": "billbitt/winston-slack-webhook"
   },
-  "name": "LBRYsync",
+  "name": "Spee.ch LBRY Sync",
   "version": "1.0.0",
-  "description": "A LBRY sync tool, syncs claims from the chain into whatever you want :)",
+  "description": "A sync tool, which syncs free claims from the LBRY chain into mysql",
   "main": "sync.js",
-  "repository": "https://github.com/filipnyquist/lighthouse-sync.git",
-  "author": "Fillerino <fillerix@fillerix.se>",
+  "repository": "https://github.com/billbitt/spee.ch-sync.git",
+  "author": "@filipnyquist and @billbitt",
   "license": "MIT"
 }
