@@ -42,12 +42,12 @@ async function sync (currentHeight) {
   }
 }
 
-function isStreamType({ name, value }){
-  if (!value.claimType){
-    logger.error(`${name} does not have a claim type`);
+function isStreamType(claim){
+  if (!claim.value.claimType){
+    logger.debug(`txid ${claim.txid} does not have a claim type`, claim);
   }
-  logger.debug(`checking isStreamType? ${name} ${value.claimType}`);
-  return value.claimType === 'streamType';
+  logger.debug(`checking isStreamType? ${claim.name} ${claim.value.claimType}`);
+  return claim.value.claimType === 'streamType';
 }
 
 function isCertificateType({ name, value }){
@@ -70,6 +70,7 @@ function cleanString(input) {
 }
 
 function createClaimDataFromResolve(claim){
+  // logger.debug('resolve result:', claim)
   let claimData = {};
   claimData['address'] = claim.address;
   claimData['amount'] = claim.amount;
@@ -129,7 +130,6 @@ function resolveAndStoreClaim(claim){
   lbrynetApi.resolveUri(`${claim.name}#${claim.claimId}`)
   .then(result => {
     let claimData, upsertCriteria;
-    // logger.verbose('resolve result:', result)
     // 2. format the resolve data for storage in Claim or Certificate table
     claimData = createClaimDataFromResolve(result);
     // 3. store the data
