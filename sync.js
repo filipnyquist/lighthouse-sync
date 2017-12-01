@@ -43,6 +43,9 @@ async function sync (currentHeight) {
 }
 
 function isStreamType({ name, value }){
+  if (!value.claimType){
+    logger.error(`${name} does not have a claim type`);
+  }
   logger.debug(`checking isStreamType? ${name} ${value.claimType}`);
   return value.claimType === 'streamType';
 }
