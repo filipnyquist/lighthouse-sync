@@ -6,7 +6,7 @@ This repo is a fork of [lighthouse-sync](https://github.com/filipnyquist/lightho
 * run `npm install`
 * start mysql
 	* create a database called `lbry`
-	* add your connection details to the `user` and `password` fields in `config/mysqlConnection.js`
+	* create a copy of `config/sequelizeCliConfig.js` that contains your mysql credentials
 * start lbrycrd
 	* install the latest release of [`lbrycrd`](https://github.com/lbryio/lbrycrd/releases)
 	* start lbrycrdd with `./lbrycrdd -server -txindex -rpcuser=lbry -rpcpassword=lbry` and leaving running
@@ -17,5 +17,4 @@ This repo is a fork of [lighthouse-sync](https://github.com/filipnyquist/lightho
 		* i.e. edit the `config.json` to change the port to `9245`
 	* start the decoder with `python decoder.py` and leave running
 * start the sync tool, passing two optional variables
-	* run `node sync_all` and optionally pass (1) the starting block number and (2) a durration to pause the tool between claims in milliseconds
-	* e.g. `node sync_all 0 1000` to start at block 0 with a 1 second buffer
+	* run `node sync.js`

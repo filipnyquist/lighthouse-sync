@@ -2,16 +2,15 @@ const Promise = require('bluebird')
 const ora = require('ora');
 const chalk = require('chalk');
 const bitcoin = require('bitcoin-promise');
-const Claim = require('./models/claim.js')
-const Certificate = require('./models/certificate.js')
+const db = require('./models');
 const lbrynetApi = require('./lbrynetApi');
 const bitcoinConfig = require('./config/bitcoinConfig.js');
 const logger = require('winston');
 const client = new bitcoin.Client(bitcoinConfig);
 let claimsSynced = 0;
 let maxHeight;
-const startHeight = (parseInt(process.argv[2]) || 253685);
-const throttle = (parseInt(process.argv[3]) || 1000);
+const startHeight = require('./config/syncConfig.js').startHeight || 0;
+const throttle = require('./config/syncConfig.js').throttle || 5000;
 
 require('./config/loggerConfig.js')(logger, 'debug') //configure winston
 require('./config/slackLoggerConfig.js')(logger);
@@ -22,10 +21,10 @@ async function sync (currentHeight) {
       let claims = await require('./getClaims')(currentHeight, client);
       send(claims);
       claimsSynced += claims.length;
-      logger.info(`Current block: ${currentHeight}/${maxHeight} | TotalClaimsFound: ${claimsSynced}`);
+      logger.info(`Current block: ${currentHeight}/${maxHeight} | TotalClaimsSinceRestart: ${claimsSynced}`);
       if (claims.length >= 1){
         const waitTime = throttle * claims.length;
-        logger.verbose(`block wait time: ${waitTime}`);
+        // logger.verbose(`block wait time: ${waitTime}`);
         setTimeout(sync, waitTime, currentHeight+1);
       } else {
         sync(currentHeight+1)
@@ -43,11 +42,13 @@ async function sync (currentHeight) {
   }
 }
 
-function isStreamType({ value }){
+function isStreamType({ name, value }){
+  logger.debug(`checking isStreamType? ${name} ${value.claimType}`);
   return value.claimType === 'streamType';
 }
 
-function isCertificateType({ value }){
+function isCertificateType({ name, value }){
+  logger.debug(`checking isCertificateType? ${name} ${value.claimType}`);
   return value.claimType === 'certificateType';
 }
 
@@ -121,25 +122,29 @@ function createClaimDataFromResolve(claim){
 
 function resolveAndStoreClaim(claim){
   logger.verbose(`resolving ${claim.name}#${claim.claimId}`);
-  // 1. prepare the data
+  // 1. resolve the claim
   lbrynetApi.resolveUri(`${claim.name}#${claim.claimId}`)
   .then(result => {
-    //logger.verbose('resolve result:', result)
-    return claimData = createClaimDataFromResolve(result);
-  })
-  // 2. store in mysql db
-  .then(claimData => {
-    //logger.verbose('claimdata:', claimData)
-    const updateCriteria = `name = "${claim.name}" AND claimId = "${claim.claimId}"`;
-    if (isStreamType(claim)){
-      return Claim.upsertOne(claimData, updateCriteria);
-    } else if (isCertificateType(claim)) {
-      return Certificate.upsertOne(claimData, updateCriteria);
-    }
-    
+    let claimData, upsertCriteria;
+    // logger.verbose('resolve result:', result)
+    // 2. format the resolve data for storage in Claim or Certificate table
+    claimData = createClaimDataFromResolve(result);
+    // 3. store the data
+    upsertCriteria = { name: claimData.name, claimId: claimData.claimId};
+    logger.debug('upsert criteria:', upsertCriteria);
+    switch (claimData.claimType) {
+        case 'streamType':
+            return db.Claim.upsert(claimData, upsertCriteria);
+        case 'certificateType':
+            return db.Certificate.upsert(claimData, upsertCriteria);
+        default:
+            logger.error(`claim ${claimData.name} neither streamType nor certificateType`);
+            logger.debug('claimdata:', claimData);
+            break;
+    };
   })
   .catch(error => {
-      logger.error('SEND ERROR', error);
+      logger.error('ResolveAndStoreClaim error', error);
     });
 }
 
@@ -147,15 +152,18 @@ function send(arr){ // Modular change output here :)
   arr.forEach(function(claim, index) { 
     if (isStreamType(claim) && isFree(claim) || isCertificateType(claim)) {
       const sendBuffer = throttle * index;
-      logger.verbose(`send buffer: ${sendBuffer}`);
+      // logger.verbose(`send buffer: ${sendBuffer}`);
       setTimeout(resolveAndStoreClaim, sendBuffer, claim);
     }
   });
 }
 
-logger.verbose(chalk.green.underline.bold('Running LBRYSync v0.0.1rc1'));
-logger.verbose('Loading LBRYsync..');
-client.getBlockCount()  // get the max height and then start the sync
+logger.verbose(chalk.green.underline.bold('Running Spee.chSync'));
+db.sequelize
+  .sync() // sync sequelize
+  .then(() => {
+    return client.getBlockCount()  // get the max height and then start the sync
+  })
   .then(blockHash => {
     console.log('block hash', blockHash);
     maxHeight = blockHash;

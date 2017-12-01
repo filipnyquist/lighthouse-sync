@@ -1,70 +1,115 @@
-const orm = require('../config/orm.js');
+const logger = require('winston');
 
-const certificateModel = {
-  // method for inserting one record into Certificate table
-  createOne: (valuesObject) => {
-    const columns = [];
-    const values = [];
-    for (let prop in valuesObject) {
-      if (valuesObject.hasOwnProperty(prop)) {
-        columns.push(prop);
-        values.push(valuesObject[prop]);
-      }
+module.exports = (sequelize, { STRING, BOOLEAN, INTEGER, TEXT, DECIMAL }) => {
+  const Certificate = sequelize.define(
+    'Certificate',
+    {
+      address: {
+        type   : STRING,
+        default: null,
+      },
+      amount: {
+        type   : DECIMAL(19, 8),
+        default: null,
+      },
+      claimId: {
+        type   : STRING,
+        default: null,
+      },
+      claimSequence: {
+        type   : INTEGER,
+        default: null,
+      },
+      decodedClaim: {
+        type   : BOOLEAN,
+        default: null,
+      },
+      depth: {
+        type   : INTEGER,
+        default: null,
+      },
+      effectiveAmount: {
+        type   : DECIMAL(19, 8),
+        default: null,
+      },
+      hasSignature: {
+        type   : BOOLEAN,
+        default: null,
+      },
+      height: {
+        type   : INTEGER,
+        default: null,
+      },
+      hex: {
+        type   : TEXT('long'),
+        default: null,
+      },
+      name: {
+        type   : STRING,
+        default: null,
+      },
+      nout: {
+        type   : INTEGER,
+        default: null,
+      },
+      txid: {
+        type   : STRING,
+        default: null,
+      },
+      validAtHeight: {
+        type   : INTEGER,
+        default: null,
+      },
+      outpoint: {
+        type   : STRING,
+        default: null,
+      },
+      valueVersion: {
+        type   : STRING,
+        default: null,
+      },
+      claimType: {
+        type   : STRING,
+        default: null,
+      },
+      certificateVersion: {
+        type   : STRING,
+        default: null,
+      },
+      keyType: {
+        type   : STRING,
+        default: null,
+      },
+      publicKey: {
+        type   : TEXT('long'),
+        default: null,
+      },
+    },
+    {
+      freezeTableName: true,
     }
-    columns.push('createdAt');
-    columns.push('updatedAt');
-    const dateNow= new Date;
-    const dateTimeNow = dateNow.toISOString().slice(0, 19).replace('T', ' ');
-    values.push(dateTimeNow)
-    values.push(dateTimeNow);
-    return orm.insertOne('Certificate', columns, values);
-  },
-  // method to insert or update one Certificate, as necessary
-  upsertOne: (valuesObject, condition) => {
-    return orm.findAll('Certificate', 'id', condition)
-    .then(result => {
-      if (result.length > 1) {
-        console.log('\nfindAll results length ==', result.length);
-        console.log('\nresults:', result);
-        return new Error('more than one matching record was found');
-      } else if (result.length === 1) {
-        const columns = [];
-        const values = [];
-        for (let prop in valuesObject) {
-          if (valuesObject.hasOwnProperty(prop)) {
-            columns.push(prop);
-            values.push(valuesObject[prop]);
-          }
-        }
-        const dateNow = new Date;
-        const dateTimeNow = dateNow.toISOString().slice(0, 19).replace('T', ' ');
-        columns.push('updatedAt');
-        values.push(dateTimeNow);
-        console.log(`\nupdating Certificate ${valuesObject.claimId}`);
-        return orm.updateOne('Certificate', columns, values, `id = ${result[0].id}`);
-      } else {
-        const columns = [];
-        const values = [];
-        for (let prop in valuesObject) {
-          if (valuesObject.hasOwnProperty(prop)) {
-            columns.push(prop);
-            values.push(valuesObject[prop]);
-          }
-        }
-        columns.push('createdAt');
-        columns.push('updatedAt');
-        const dateNow= new Date;
-        const dateTimeNow = dateNow.toISOString().slice(0, 19).replace('T', ' ');
-        values.push(dateTimeNow)
-        values.push(dateTimeNow);
-        console.log(`\ninserting Certificate ${valuesObject.claimId}`);
-        return orm.insertOne('Certificate', columns, values);
-      }
-    })
-    .catch(error => {
-      return error;
-    });
-  },
-};
+  );
 
-module.exports = certificateModel;
+    // add an 'upsert' method to the db object
+    Certificate.upsert = function (values, condition) {
+        const that = this;
+        return that
+            .findOne({ where: condition })
+            .then(obj => {
+                if (obj) {
+                    // update
+                    logger.debug(`updating record in db.Certificate`, values);
+                    return obj.update(values);
+                } else {
+                    // insert
+                    logger.debug(`creating record in db.Certificate`, values);
+                    return that.create(values);
+                }
+            })
+            .catch(function (error) {
+                logger.error(`Certificate.upsert error`, error);
+            });
+    };
+
+  return Certificate;
+};
