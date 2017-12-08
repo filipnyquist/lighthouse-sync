@@ -2,3 +2,5 @@ node_modules
 db/schema.sql
 .idea
 config/sequelizeCliConfig.js
+config/syncConfig.js
+config/slackLoggerConfig.js
